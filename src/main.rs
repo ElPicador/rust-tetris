@@ -9,6 +9,7 @@ use display::Display;
 use std::thread;
 use std::sync::mpsc;
 use util::*;
+use std::time;
 
 const BOARD_WIDTH: u32 = 10;
 const BOARD_HEIGHT: u32 = 20;
@@ -304,8 +305,8 @@ impl Game {
             board: Board{
                 cells: [[None; BOARD_WIDTH as usize]; BOARD_HEIGHT as usize]
             },
-            piece_bag: piece_bag,
-            piece: piece,
+            piece_bag,
+            piece,
             piece_position: Point{ x: 0, y: 0 }
         };
 
@@ -334,11 +335,11 @@ impl Game {
 
         // Render the currently falling piece
         let x = 1 + (2 * self.piece_position.x);
-        self.render_piece(display, &self.piece, Point{ x: x, y: self.piece_position.y });
+        self.render_piece(display, &self.piece, Point{ x, y: self.piece_position.y });
 
         // Render a ghost piece
         let ghost_position = self.find_dropped_position();
-        self.render_piece(display, &self.piece, Point{ x: x, y: ghost_position.y });
+        self.render_piece(display, &self.piece, Point{ x, y: ghost_position.y });
 
         // Render the next piece
         display.set_text("Next piece:", left_margin, 7, Color::Red, Color::Black);
@@ -447,7 +448,7 @@ impl Game {
             let tx_event = tx_event.clone();
             thread::spawn(move || {
                 loop {
-                    thread::sleep_ms(500);
+                    thread::sleep(time::Duration::from_millis(500));
                     tx_event.send(GameUpdate::Tick).unwrap();
                 };
             });
